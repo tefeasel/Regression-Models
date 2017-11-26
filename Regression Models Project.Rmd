@@ -1,0 +1,58 @@
+---
+output:
+  html_document: default
+  word_document: default
+---
+#Regression Models Project Executive Summary
+The goal of this study is to determine the difference in miles per gallon in
+automatic versus manual transmission vehicles. To estimate this, we will use linear 
+regression models. The overall conclusion is that we cannot definitevely say whether
+the type of transmission affects MPG.
+
+#Preprocesing and Data Exploration
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(corrplot)
+library(car)
+```
+```{r}
+data(mtcars)
+dim(mtcars)
+sum(is.na(mtcars))
+```
+The mtcars dataset has 32 observations and 11 variables. There is no missing data. Looking at the summary statistics (see appendix), 41% of the observations are vehicles with automatic transmissions. the average MPG is approximately 20 MPG. Further, we observe that automatic vehicles get more MPG (see appendix box plot). Finally, with mean > median MPG shows a right skew.
+
+#Modeling, Model #1
+```{r}
+model <- lm(mpg ~ am, data = mtcars)
+summary(model)
+```
+The first model built is a simple linear regression, with AM as the independent variable. The result indicates that automatic vehicles get 7.245 more MPG than manual transmission vehicles.  
+#Modeling, Model #2
+```{r}
+model2 <- lm(log(mpg) ~ am + wt + cyl + hp, data = mtcars)
+summary(model2)
+vif(model2)
+```
+The second model uses am, wt, and hp as the independent variables and the dependent variable uses a natrual log to help address the right skew. Variable selection is based on the variables with the strongest covariance with MPG (see appendix). I chose to omit many to avoid multicollinearity. This model has an adj. r-squared of .8267 and shows that am is insignificant, and that only the wt variable is significant with a -16.4% change with each 1000 pound increase. The VIF doesn't indicate that multicollinearity is a concern. Finally, the fitted vs. residual plot (see appendix) shows a little evidence of heteroskedasticity. 
+
+#Conclusion
+After fitting two models, this study did not observe a statistically significant difference in MPG for automatic and manual transmissions. As such, one cannot quantify the difference. The best one could estimate is ~ +7 MPG for automatics, not controlling for other variables.
+
+#Appendix
+```{r}
+#Summary Stats
+summary(mtcars)
+
+#Box Plot
+ggplot(mtcars, aes(x = factor(am), y = mpg)) + geom_boxplot()
+
+#Correlations
+corrplot(cor(mtcars))
+
+#Model 2 Plots
+par(mfrow = c(2,2))
+plot(model2)
+```
